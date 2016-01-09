@@ -876,19 +876,24 @@
 
     [self.navigationDelegate webViewDidFinishLoad:theWebView];
 }
-
+//1. If the URL redirects to another URL, we will receive an NSURLErrorCancelled error.
+//2. If the page contains links to the AppStore, tapping the link will return an error (but the AppStore link will still be handled by iOS).
+//3. If the URL is a direct link to a Video/Audio, we will receive an error (“Plug-in handled load”) even if the video/audio will play.
+// see: https://happyteamlabs.com/blog/ios-uiwebview-errors-to-look-out-for/
 - (void)webView:(UIWebView*)theWebView didFailLoadWithError:(NSError*)error
 {
-    // log fail message, stop spinner, update back/forward
-    NSLog(@"webView:didFailLoadWithError - %ld: %@", (long)error.code, [error localizedDescription]);
-
-    self.backButton.enabled = theWebView.canGoBack;
-    self.forwardButton.enabled = theWebView.canGoForward;
-    [self.spinner stopAnimating];
-
-    self.addressLabel.text = NSLocalizedString(@"Load Error", nil);
-
-    [self.navigationDelegate webView:theWebView didFailLoadWithError:error];
+    if([error.domain isEqualToString:@"WebKitErrorDomain"]&&(error.code == 102||error.code == 204||error.code == NSURLErrorCancelled)){
+        [self.navigationDelegate webViewDidFinishLoad:theWebView];
+    }else{
+        self.backButton.enabled = theWebView.canGoBack;
+        self.forwardButton.enabled = theWebView.canGoForward;
+        [self.spinner stopAnimating];
+    
+        self.addressLabel.text = NSLocalizedString(@"Load Error", nil);
+        // log fail message, stop spinner, update back/forward
+        NSLog(@"webView:didFailLoadWithError - %ld: %@", (long)error.code, [error localizedDescription]);
+        [self.navigationDelegate webView:theWebView didFailLoadWithError:error];
+    }
 }
 
 #pragma mark CDVScreenOrientationDelegate
