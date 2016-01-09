@@ -882,13 +882,10 @@
 // see: https://happyteamlabs.com/blog/ios-uiwebview-errors-to-look-out-for/
 - (void)webView:(UIWebView*)theWebView didFailLoadWithError:(NSError*)error
 {
-    if([error.domain isEqualToString:@"WebKitErrorDomain"]&&(error.code == 102||error.code == 204||error.code == NSURLErrorCancelled)){
-        [self.navigationDelegate webViewDidFinishLoad:theWebView];
-    }else{
-        self.backButton.enabled = theWebView.canGoBack;
-        self.forwardButton.enabled = theWebView.canGoForward;
-        [self.spinner stopAnimating];
-    
+    self.backButton.enabled = theWebView.canGoBack;
+    self.forwardButton.enabled = theWebView.canGoForward;
+    [self.spinner stopAnimating];
+    if(!([error.domain isEqualToString:@"WebKitErrorDomain"]&&(error.code == 102||error.code == 204||error.code == NSURLErrorCancelled))){
         self.addressLabel.text = NSLocalizedString(@"Load Error", nil);
         // log fail message, stop spinner, update back/forward
         NSLog(@"webView:didFailLoadWithError - %ld: %@", (long)error.code, [error localizedDescription]);
